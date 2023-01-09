@@ -8,6 +8,7 @@ from barcode.writer import ImageWriter
 import os, subprocess
 import os.path
 import glob
+import time
 
 import labels
 from reportlab.graphics import shapes
@@ -307,4 +308,5 @@ try:
 except:
     print(f"{bcolors.WARNING}WARNING: Unable to complete cleanup{bcolors.ENDC}")
 
+time.sleep(5)
 print("")
