@@ -83,8 +83,10 @@ class studentUser:
         fullName = "Name Not Found"
         firstName = "FNameError"
         lastName = "LNameError"
-        gradYear = "0000"
+
+        attribYearJob = "0000"
         school = "None"
+
 
         try:
             userName = re.findall("[a-z]+[0-9]*", input)[0]
@@ -93,51 +95,67 @@ class studentUser:
 
         if validity:
 
-            p = subprocess.Popen(
-                f"dscl /Active\ Directory/CHATHAM-AD/All\ Domains/ read /Users/{userName}", 
-                stdout= subprocess.PIPE,
-                shell=True
-                )
-            (data, err) = p.communicate()
-            p_status = p.wait()
-            data = data.decode('utf-8')
+            attempts = 0
+            while attempts < 3:
+                try:
+                    p = subprocess.Popen(
+                        f"dscl /Active\ Directory/CHATHAM-AD/All\ Domains/ read /Users/{userName}", 
+                        stdout= subprocess.PIPE,
+                        shell=True
+                        )
+                    (data, err) = p.communicate()
+                    p_status = p.wait()
+                    data = data.decode('utf-8')
+                    break
+                except:
+                    attempts += 1
+                    time.sleep(0.5)
 
             # Full Name
             try:
-                fullName = re.findall("RealName:[\n]?[ ]?[A-Za-z0-9'\-\s]+\n", data)[0]
+                fullName = re.findall("RealName:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                 fullName = re.sub("^RealName:[\n]?[ ]?", "", fullName)
                 fullName = re.sub("[\n]$", "", fullName)
             except:
+                print(f"{bcolors.WARNING}> WARNING: Full Name Not Found{bcolors.ENDC}")
                 validity = False
 
             # First Name
             try:
-                firstName = re.findall("FirstName:[\n]?[ ]?[A-Za-z0-9'\-\s]+\n", data)[0]
+                firstName = re.findall("FirstName:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                 firstName = re.sub("^FirstName:[\n]?[ ]?", "", firstName)
                 firstName = re.sub("[\n]$", "", firstName)
             except:
+                print(f"{bcolors.WARNING}> WARNING: First Name Not Found{bcolors.ENDC}")
                 validity = False
 
             # Last Name
             try:
-                lastName = re.findall("LastName:[\n]?[ ]?[A-Za-z0-9'\-\s]+\n", data)[0]
+                lastName = re.findall("LastName:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                 lastName = re.sub("^LastName:[\n]?[ ]?", "", lastName)
                 lastName = re.sub("[\n]$", "", lastName)
             except:
+                print(f"{bcolors.WARNING}> WARNING: Last Name Not Found{bcolors.ENDC}")
                 validity = False
 
-            # Grade Level
+            # Grade Level / Job
             try:
-                gradYear = re.findall("FAXNumber:[\n]?[ ]?[0-9]+\n", data)[0]
-                gradYear = re.sub("^FAXNumber:[\n]?[ ]?", "", gradYear)
-                gradYear = re.sub("[\n]$", "", gradYear)
+                attribYearJob = re.findall("FAXNumber:[\n]?[ ]?[0-9]+\n", data)[0]
+                attribYearJob = re.sub("^FAXNumber:[\n]?[ ]?", "", attribYearJob)
+                attribYearJob = re.sub("[\n]$", "", attribYearJob)
                 try:
-                    gradeCalc = (12 - int(gradYear)) + currentYear + 1
-                    gradYear = str(gradeCalc).zfill(4)
+                    gradeCalc = (12 - int(attribYearJob)) + currentYear + 1
+                    attribYearJob = str(gradeCalc).zfill(4)
                 except:
-                    gradYear = "0000"
+                    attribYearJob = "0000"
             except:
-                validity = False
+                try:
+                    attribYearJob = re.findall("dsAttrTypeNative:displayNamePrintable:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
+                    attribYearJob = re.sub("^dsAttrTypeNative:displayNamePrintable:[\n]?[ ]?", "", attribYearJob)
+                    attribYearJob = re.sub("[\n]$", "", attribYearJob)
+                except:
+                    print(f"{bcolors.WARNING}> WARNING: Year/Job Not Found{bcolors.ENDC}")
+                    validity = False
 
             # School Code
             try:
@@ -145,7 +163,14 @@ class studentUser:
                 school = re.sub("^dsAttrTypeNative:extensionAttribute8:[\n]?[ ]?", "", school)
                 school = re.sub("[\n]$", "", school)
             except:
-                validity = False
+                try:
+                    school = re.findall("Comment: [\n]?[ ]?[A-Za-z0-9]+\n", data)[0]
+                    school = re.sub("^Comment:[\n]?[ ]?", "", school)
+                    school = re.sub("[\n]$", "", school)
+                except:
+                    print(f"{bcolors.WARNING}> WARNING: School Code Not Found{bcolors.ENDC}")
+                    validity = False
+
 
 
         self.userName = userName
@@ -153,7 +178,7 @@ class studentUser:
         self.fullName = fullName
         self.firstName = firstName
         self.lastName = lastName
-        self.gradYear = gradYear
+        self.gradYear = attribYearJob
         self.school = school
         self.valid = validity
 
