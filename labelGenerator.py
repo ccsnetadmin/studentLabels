@@ -153,6 +153,8 @@ class studentUser:
                     attribYearJob = re.findall("dsAttrTypeNative:displayNamePrintable:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                     attribYearJob = re.sub("^dsAttrTypeNative:displayNamePrintable:[\n]?[ ]?", "", attribYearJob)
                     attribYearJob = re.sub("[\n]$", "", attribYearJob)
+                    if attribYearJob == "ADMINISTRATOR":
+                        attribYearJob = "ADMIN"
                 except:
                     print(f"{bcolors.WARNING}> WARNING: Year/Job Not Found{bcolors.ENDC}")
                     validity = False
