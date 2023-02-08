@@ -259,7 +259,7 @@ class bcolors:
 
 print("")
 
-studentList = input(f"{bcolors.HEADER}Enter student Usernames separated by commas: {bcolors.ENDC}")
+studentList = input(f"{bcolors.HEADER}Enter Usernames separated by commas: {bcolors.ENDC}")
 studentList = studentList.split(",")
 studentList = [s.strip() for s in studentList]
 
