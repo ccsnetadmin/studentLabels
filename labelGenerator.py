@@ -74,6 +74,20 @@ specs = labels.Specification(
 
 ########## Functions ##########
 
+class userInput:
+
+    def __init__(self, bigtext, smallLeft, smallRight, barcode):
+
+        self.userName = barcode
+
+        self.fullName = "UserLabel"
+        self.firstName = smallLeft
+        self.lastName = bigtext
+        self.gradYear = smallRight
+        self.school = ""
+        self.valid = True
+
+
 class studentUser:
 
     def __init__(self, input, currentYear):
@@ -187,7 +201,6 @@ class studentUser:
         #if not validity:
         #    print(f"WARNING: Invalid Tag -| {input} |-")
 
-
 def draw_label(label, width, height, obj):
 
     userNamePath = os.path.join(base_path, f"temp/{obj.userName}.png")
@@ -259,8 +272,12 @@ class bcolors:
 
 print("")
 
-studentList = input(f"{bcolors.HEADER}Enter Usernames separated by commas: {bcolors.ENDC}")
-studentList = studentList.split(",")
+isUserLabel = False
+
+studentList = input(f"{bcolors.HEADER}Enter student Usernames separated by commas: {bcolors.ENDC}")
+if (studentList == ""):
+    isUserLabel = True
+studentList = studentList.lower().split(",")
 studentList = [s.strip() for s in studentList]
 
 
@@ -310,14 +327,36 @@ sheet.partial_page(1, usedLabels)
 generatedSomething = False
 generatedError = False
 listOfErrors = []
-for i in range(len(studentList)):
-    studentStore = studentUser(studentList[i], currentYear)
-    if studentStore.valid:
-        sheet.add_label(studentStore)
-        print(f">  Generated [{studentStore.userName}] - {studentStore.fullName}")
-        generatedSomething = True
-    else:
-        print(f"{bcolors.FAIL}WARNING: Failed to generate tag [{studentStore.userName}]{bcolors.ENDC}")
+if (not isUserLabel):
+    for i in range(len(studentList)):
+        studentStore = studentUser(studentList[i], currentYear)
+        if studentStore.valid:
+            sheet.add_label(studentStore)
+            print(f">  Generated [{studentStore.userName}] - {studentStore.fullName}")
+            generatedSomething = True
+        else:
+            print(f"{bcolors.FAIL}WARNING: Failed to generate tag [{studentStore.userName}]{bcolors.ENDC}")
+else:
+    inputComplete = False
+    while not inputComplete:
+        print(f"{bcolors.OKCYAN}<<----- New Manual Label ----->>{bcolors.ENDC}")
+        bigText = input(f"{bcolors.HEADER}Enter large label text: {bcolors.ENDC}")
+        tlText = input(f"{bcolors.HEADER}Enter upper left label text: {bcolors.ENDC}")
+        trText = input(f"{bcolors.HEADER}Enter upper right label text: {bcolors.ENDC}")
+        barText = input(f"{bcolors.HEADER}Enter barcode text: {bcolors.ENDC}")
+        if  (barText != ""):
+            tempLabel = userInput(bigText, tlText, trText, barText)
+            sheet.add_label(tempLabel)
+            print(f"Generated [{tempLabel.userName}] - {tempLabel.lastName}\n")
+            generatedSomething = True
+        else:
+            print(f"{bcolors.WARNING}WARNING: Barcode cannot be left blank{bcolors.ENDC}")
+        another = input(f"{bcolors.HEADER}Add Another Label? (Y/n): {bcolors.ENDC}")
+        if (another == "Y"):
+            print("")
+        else:
+            inputComplete = True
+
 
 print("")
 
