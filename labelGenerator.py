@@ -27,7 +27,7 @@ import string
 ########## Variables ##########
 
 # This is the first of the two-year range (ex 2017-2018 would be '2017')
-currentYear = 2022
+currentYear = 2023
 
 base_path = os.path.dirname(__file__)
 desktop_path = os.path.expanduser("~/Desktop")
