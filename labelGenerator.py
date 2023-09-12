@@ -2,25 +2,25 @@
 
 ########## Imports ##########
 
+import os, subprocess
+import time
+import string
+import glob
+import re
+
+#imports from python-barcode
 from barcode import Code128
 from barcode.writer import ImageWriter
-
-import os, subprocess
-import os.path
-import glob
-import time
-
+#imports from pylabels
 import labels
+#imports from reportlab
 from reportlab.graphics import shapes
 from reportlab.platypus import Image
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.lib import colors
-
+#imports from Pillow
 from PIL import Image
-
-import re
-import string
 
 
 
