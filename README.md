@@ -21,7 +21,7 @@ git clone https://github.com/ccsnetadmin/studentLabels.git ~/.studentLabels
 ```
 
 ```console
-python3 -m pip install -r ~/.studentLabels/requirements.txt
+python3 -m pip install --upgrade pip && python3 -m pip install -r ~/.studentLabels/requirements.txt
 ```
 
 To set the alias `label`, run the code below and restart your terminal.
@@ -35,13 +35,28 @@ type label >/dev/null && echo "Alias exists" || sudo printf "\nalias label=\"pyt
 Run the following:
 
 ```console
-git -C ~/.studentLabels pull https://github.com/ccsnetadmin/studentLabels.git && python3 -m pip install -r ~/.studentLabels/requirements.txt
+git -C ~/.studentLabels pull https://github.com/ccsnetadmin/studentLabels.git && python3 -m pip install --upgrade pip && python3 -m pip install -r ~/.studentLabels/requirements.txt
 ```
 
 <br/>
 <br/>
 
 # Usage
+
+## Label Order
+
+```
++------+------+------+      Labels begin at A1 in the top
+|  A1  |  B1  |  C1  |      right corner and continue right
+|  A2  |  B2  |  C2  |      then down.
+ \      \      \      \
+  +------+------+------+    Example:
+ /      /      /      /         A1 -> B1 -> C1 -> A2 -> B2
+|  A9  |  B9  |  C9  |
+|  A10 |  B10 |  C10 |      Labels will automatically begin
++------+------+------+      at A1 on new pages.
+```
+
 
 ## Interactive
 
