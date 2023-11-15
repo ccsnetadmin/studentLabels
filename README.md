@@ -16,15 +16,15 @@ python3 --version
 Run the following in order:
 
 ```console
-sudo git clone https://github.com/ccsnetadmin/studentLabels.git /usr/local/bin/studentLabels
+git clone https://github.com/ccsnetadmin/studentLabels.git ~/.studentLabels
 ```
 
 ```console
-sudo python3 -m pip install -r /usr/local/bin/studentLabels/requirements.txt
+python3 -m pip install -r ~/.studentLabels/requirements.txt
 ```
 
 ```console
-sudo printf "\nalias label=\"python3 /usr/local/bin/studentLabels/labelGenerator.py\"\n" >> ~/.zprofile
+type label >/dev/null && echo "Alias exists" || sudo printf "\nalias label=\"python3 ~/.studentLabels/labelGenerator.py\"\n" >> ~/.zprofile
 ```
 
 ## Updating
@@ -32,7 +32,7 @@ sudo printf "\nalias label=\"python3 /usr/local/bin/studentLabels/labelGenerator
 Run the following:
 
 ```console
-sudo git pull https://github.com/ccsnetadmin/studentLabels.git /usr/local/bin/studentLabels && sudo python3 -m pip install -r /usr/local/bin/studentLabels/requirements.txt
+sudo git pull https://github.com/ccsnetadmin/studentLabels.git ~/.studentLabels && python3 -m pip install -r ~/.studentLabels/requirements.txt
 ```
 
 <br/>

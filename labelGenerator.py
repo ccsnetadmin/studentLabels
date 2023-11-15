@@ -32,6 +32,7 @@ version = "0.9.1"
 
 base_path = os.path.dirname(__file__)
 output_path = os.path.expanduser("~/Desktop")
+temp_directory = os.path.expanduser("~/Library/Caches/labelGenerator")
 
 registerFont(TTFont('Ostrich Sans Heavy', os.path.join(base_path, 'resources/OstrichSans-Heavy.ttf')))
 registerFont(TTFont('SerifRegular', os.path.join(base_path, 'resources/SourceSerifPro-Regular.ttf')))
@@ -220,7 +221,7 @@ class studentUser:
 
 def draw_label(label, width, height, obj):
 
-    userNamePath = os.path.join(base_path, f"temp/{obj.userName}.png")
+    userNamePath = os.path.join(temp_directory, f"{obj.userName}.png")
     with open(userNamePath, "wb") as f:
         Code128(obj.userName, writer=ImageWriter()).write(f, options={"write_text": False})
 
@@ -289,11 +290,11 @@ def main():
 
     print("")
 
-    if not (os.path.exists(os.path.join(base_path, "temp"))):
-        os.makedirs(os.path.join(base_path, "temp"))
+    if not (os.path.exists(temp_directory)):
+        os.makedirs(temp_directory)
 
     try:
-        posFile = open(os.path.join(base_path, "temp/position.txt"), "r")
+        posFile = open(os.path.join(temp_directory, "position.txt"), "r")
         defaultStart = posFile.read()
         posFile.close()
     except Exception:
@@ -459,7 +460,7 @@ def main():
             print(f"{bcolors.OKCYAN}{sheet.label_count} label{'s' if sheet.label_count > 1 else ''} output on {sheet.page_count} page{'s' if sheet.page_count > 1 else ''}.{bcolors.ENDC}")
             os.system(f"open {output_path}/Labels.pdf")
 
-            posFile = open(os.path.join(base_path, "temp/position.txt"), "w")
+            posFile = open(os.path.join(temp_directory, "position.txt"), "w")
             finalPos = (skipStart[0]-1) + ((skipStart[1]-1)*sheetSpecColumns) + sheet.label_count
             finalPos = finalPos % (sheetSpecColumns * sheetSpecRows)
             posString = string.ascii_uppercase[finalPos % sheetSpecColumns] + str((finalPos // sheetSpecColumns)+1)
@@ -470,7 +471,7 @@ def main():
             print(f"{bcolors.FAIL}ERROR: No Labels Generated{bcolors.ENDC}")
 
         try:
-            filelist = glob.glob(os.path.join(base_path, "temp", "*.png"))
+            filelist = glob.glob(os.path.join(temp_directory, "*.png"))
             for f in filelist:
                 os.remove(f)
         except Exception:
