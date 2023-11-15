@@ -14,6 +14,16 @@ git --version
 python3 --version
 ```
 
+> Git may ask you to install Developer Tools. Please do so if prompted. <br/>
+If python is not installed, use `sudo jamf policy -event installPython3` to install it from Jamf.
+
+Then check that Active Directory is bound by running:
+```console
+id cchatham
+```
+
+> If you get an error, use `sudo jamf policy -event rebind-ad` to rebind to AD via Jamf.
+
 Run the following in order:
 
 ```console
