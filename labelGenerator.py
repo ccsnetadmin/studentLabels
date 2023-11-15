@@ -2,11 +2,14 @@
 
 ########## Imports ##########
 
-import os, subprocess
+import os
+import subprocess
 import time
 import string
 import glob
 import re
+import csv
+import sys
 
 #imports from python-barcode
 from barcode import Code128
@@ -15,12 +18,12 @@ from barcode.writer import ImageWriter
 import labels
 #imports from reportlab
 from reportlab.graphics import shapes
-from reportlab.platypus import Image
+#from reportlab.platypus import Image
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.lib import colors
 #imports from Pillow
-from PIL import Image
+#from PIL import Image
 
 
 
@@ -104,7 +107,7 @@ class studentUser:
 
         try:
             userName = re.findall("[a-z]+[0-9]*", input)[0]
-        except:
+        except Exception:
             validity = False
 
         if validity:
@@ -118,10 +121,10 @@ class studentUser:
                         shell=True
                         )
                     (data, err) = p.communicate()
-                    p_status = p.wait()
+                    #p_status = p.wait()
                     data = data.decode('utf-8')
                     break
-                except:
+                except Exception:
                     attempts += 1
                     time.sleep(0.5)
 
@@ -130,7 +133,7 @@ class studentUser:
                 fullName = re.findall("RealName:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                 fullName = re.sub("^RealName:[\n]?[ ]?", "", fullName)
                 fullName = re.sub("[\n]$", "", fullName)
-            except:
+            except Exception:
                 print(f"{bcolors.WARNING}> WARNING: Full Name Not Found{bcolors.ENDC}")
                 validity = False
 
@@ -139,7 +142,7 @@ class studentUser:
                 firstName = re.findall("FirstName:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                 firstName = re.sub("^FirstName:[\n]?[ ]?", "", firstName)
                 firstName = re.sub("[\n]$", "", firstName)
-            except:
+            except Exception:
                 print(f"{bcolors.WARNING}> WARNING: First Name Not Found{bcolors.ENDC}")
                 validity = False
 
@@ -148,7 +151,7 @@ class studentUser:
                 lastName = re.findall("LastName:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                 lastName = re.sub("^LastName:[\n]?[ ]?", "", lastName)
                 lastName = re.sub("[\n]$", "", lastName)
-            except:
+            except Exception:
                 print(f"{bcolors.WARNING}> WARNING: Last Name Not Found{bcolors.ENDC}")
                 validity = False
 
@@ -160,16 +163,16 @@ class studentUser:
                 try:
                     gradeCalc = (12 - int(attribYearJob)) + currentYear + 1
                     attribYearJob = str(gradeCalc).zfill(4)
-                except:
+                except Exception:
                     attribYearJob = "0000"
-            except:
+            except Exception:
                 try:
                     attribYearJob = re.findall("dsAttrTypeNative:displayNamePrintable:[\n]?[ ]?[A-Za-z0-9'\-\s.]+\n", data)[0]
                     attribYearJob = re.sub("^dsAttrTypeNative:displayNamePrintable:[\n]?[ ]?", "", attribYearJob)
                     attribYearJob = re.sub("[\n]$", "", attribYearJob)
                     if attribYearJob == "ADMINISTRATOR":
                         attribYearJob = "ADMIN"
-                except:
+                except Exception:
                     print(f"{bcolors.WARNING}> WARNING: Year/Job Not Found{bcolors.ENDC}")
                     validity = False
 
@@ -178,12 +181,12 @@ class studentUser:
                 school = re.findall("dsAttrTypeNative:extensionAttribute8:[\n]?[ ]?[A-Za-z0-9]+\n", data)[0]
                 school = re.sub("^dsAttrTypeNative:extensionAttribute8:[\n]?[ ]?", "", school)
                 school = re.sub("[\n]$", "", school)
-            except:
+            except Exception:
                 try:
                     school = re.findall("Comment: [\n]?[ ]?[A-Za-z0-9]+\n", data)[0]
                     school = re.sub("^Comment:[\n]?[ ]?", "", school)
                     school = re.sub("[\n]$", "", school)
-                except:
+                except Exception:
                     print(f"{bcolors.WARNING}> WARNING: School Code Not Found{bcolors.ENDC}")
                     validity = False
 
@@ -206,7 +209,7 @@ def draw_label(label, width, height, obj):
     userNamePath = os.path.join(base_path, f"temp/{obj.userName}.png")
     with open(userNamePath, "wb") as f:
         Code128(obj.userName, writer=ImageWriter()).write(f, options={"write_text": False})
-    im = Image.open(userNamePath)
+    #im = Image.open(userNamePath)
 
     label.add(shapes.Image(23, 10, width=150, height=25, path=userNamePath))
 
@@ -272,9 +275,48 @@ class bcolors:
 
 print("")
 
+hasArgs = False
 isUserLabel = False
 
-studentList = input(f"{bcolors.HEADER}Enter student Usernames separated by commas: {bcolors.ENDC}")
+if sys.argv is not None:
+
+    hasArgs = True
+
+    if (".csv" in sys.argv[0]):
+        csvPath = sys.argv[0]
+
+        print(f"{bcolors.OKCYAN}Importing names from {csvPath}{bcolors.ENDC}")
+
+        headerNum = input(f"{bcolors.HEADER}How many header rows to ignore?: {bcolors.ENDC}")
+        if (headerNum == ""):
+            headerNum = 0
+        try:
+            headerNum = int(headerNum)
+        except Exception:
+            print(f"{bcolors.WARNING}WARNING: Unable to interpret, defaulting to 0{bcolors.ENDC}")
+            headerNum = 0
+
+        allText = ""
+        try:
+            allText = []
+            with open(csvPath, newline='') as csvfile:
+                inputfile = csv.reader(csvfile, delimiter=' ', quotechar='|')
+                for idx, row in enumerate(inputfile):
+                    if (idx >= headerNum):
+                        allText.append(', '.join(row))
+                allText = ', '.join(allText)
+        except Exception:
+            print(f"{bcolors.FAIL}ERROR: Unable to read CSV file{bcolors.ENDC}")
+
+        if (allText == ""):
+            print(f"{bcolors.FAIL}ERROR: No data from CSV, defaulting to user input{bcolors.ENDC}")
+            hasArgs = False
+        else:
+            studentList = allText
+
+
+if (not hasArgs):
+    studentList = input(f"{bcolors.HEADER}Enter student Usernames separated by commas: {bcolors.ENDC}")
 if (studentList == ""):
     isUserLabel = True
 studentList = studentList.lower().split(",")
@@ -288,7 +330,7 @@ sheet = labels.Sheet(specs, draw_label, border=isBorders)
 
 
 skipStartInputSearch = re.search("^[a-zA-Z][0-9]+$", skipStartInput)
-if (not skipStartInputSearch == None):
+if (skipStartInputSearch is not None):
 
     newString = ""
     for i in range(skipStartInputSearch.span(0)[0], skipStartInputSearch.span(0)[0] + skipStartInputSearch.span(0)[1]):
@@ -319,7 +361,7 @@ for i in range(1, sheetSpecRows+1):
             if (j == skipStart[0] and i == skipStart[1]):
                 isFound = True
             else:
-                if (isFound == False):
+                if (isFound is False):
                     usedLabels.append([i, j])
 usedLabels.pop(0)
 sheet.partial_page(1, usedLabels)
@@ -371,8 +413,8 @@ try:
     filelist = glob.glob(os.path.join(base_path, "temp", "*"))
     for f in filelist:
         os.remove(f)
-except:
+except Exception:
     print(f"{bcolors.WARNING}WARNING: Unable to complete cleanup{bcolors.ENDC}")
 
-time.sleep(5)
+# time.sleep(1)
 print("")
