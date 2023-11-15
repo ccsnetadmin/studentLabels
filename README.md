@@ -2,6 +2,8 @@
 
 This python script generates student, staff, and faculty labels from a list of usernames using Active Directory information.
 
+> **WARNING :** _The current school year must be updated in labelGenerator.py each summer! Check set year with `-v`_
+
 # Recommended Installation
 
 Check that Git and Python3 are set up properly by running:
@@ -71,7 +73,7 @@ Document Saved as Labels.pdf on Desktop
 | `-n` | Use default (saved) start position for labels |
 | `-f CSV_FILE` | Specify a .csv file of usernames |
 | `--head HEAD` | Specify a number of csv header rows to ignore |
-| `-v` | show version information |
+| `-v` | show version information and current school year |
 | `[N ...]` | usernames can be entered directly via arguments to bypass the interactive prompt|
 
 <br/>

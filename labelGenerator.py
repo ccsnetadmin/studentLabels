@@ -86,7 +86,7 @@ parser.add_argument('--head', dest='head', required=False, type=int,
                     help='specify number of csv header rows to ignore')
 parser.add_argument('argNames', metavar='N', nargs='*',
                     help='Usernames for label creation')
-parser.add_argument('-v','--version', action='version', version=('%(prog)s '+ version))
+parser.add_argument('-v','--version', action='version', version=('%(prog)s '+ version + ' | School Year ' + str(currentYear)))
 args = parser.parse_args()
 
 ########## Functions ##########
