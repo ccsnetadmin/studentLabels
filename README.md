@@ -2,7 +2,7 @@
 
 This python script generates student, staff, and faculty labels from a list of usernames using Active Directory information.
 
-> **WARNING :** _The current school year must be updated in labelGenerator.py each summer! Check set year with `-v`_
+> **WARNING:** _The current school year must be updated in labelGenerator.py each summer!<br/>Check set year with `labelGenerator.py -v`_
 
 # Recommended Installation
 
@@ -42,7 +42,7 @@ sudo git pull https://github.com/ccsnetadmin/studentLabels.git /usr/local/bin &&
 
 ## Interactive
 
-`labelGenerator.py`
+`python3 labelGenerator.py`
 
 Running this script without arguments will show an interactive CLI 
 
