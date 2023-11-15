@@ -10,6 +10,7 @@ import glob
 import re
 import csv
 import sys
+import argparse
 
 #imports from python-barcode
 from barcode import Code128
@@ -22,10 +23,19 @@ from reportlab.graphics import shapes
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.lib import colors
-#imports from Pillow
-#from PIL import Image
 
+parser = argparse.ArgumentParser(
+    prog='label',
+    description='Takes in usernames and generates labels for printing'
+    )
 
+parser.add_argument('-f', dest='csv_file', required=False,
+                    help='Path to CSV file')
+parser.add_argument('argNames', metavar='N', nargs='*',
+                    help='Usernames for label creation')
+args = parser.parse_args()
+
+print(args)
 
 ########## Variables ##########
 
@@ -33,7 +43,7 @@ from reportlab.lib import colors
 currentYear = 2023
 
 base_path = os.path.dirname(__file__)
-desktop_path = os.path.expanduser("~/Desktop")
+output_path = os.path.expanduser("~/Desktop")
 
 registerFont(TTFont('Ostrich Sans Heavy', os.path.join(base_path, 'resources/OstrichSans-Heavy.ttf')))
 registerFont(TTFont('SerifRegular', os.path.join(base_path, 'resources/SourceSerifPro-Regular.ttf')))
@@ -41,8 +51,7 @@ registerFont(TTFont('SerifBold', os.path.join(base_path, 'resources/SourceSerifP
 
 isBorders = False
 
-skipStart = [1, 1]
-
+defaultStart = "A1"
 
 sheetSpecWidth = 215.9
 sheetSpecHeight = 279.4
@@ -209,7 +218,6 @@ def draw_label(label, width, height, obj):
     userNamePath = os.path.join(base_path, f"temp/{obj.userName}.png")
     with open(userNamePath, "wb") as f:
         Code128(obj.userName, writer=ImageWriter()).write(f, options={"write_text": False})
-    #im = Image.open(userNamePath)
 
     label.add(shapes.Image(23, 10, width=150, height=25, path=userNamePath))
 
@@ -230,7 +238,6 @@ def draw_label(label, width, height, obj):
     label.add(backRect)
 
     label.add(userNameText)
-
 
     lastName = obj.lastName
     fontSize = 20
@@ -273,20 +280,40 @@ class bcolors:
 
 ########## BEGIN SCRIPT ##########
 
-print("")
+def main():
 
-hasArgs = False
-isUserLabel = False
+    print("")
 
-if (len(sys.argv) > 1):
+    if not (os.path.exists(os.path.join(base_path, "temp"))):
+        os.makedirs(os.path.join(base_path, "temp"))
 
-    hasArgs = True
+    try:
+        posFile = open(os.path.join(base_path, "temp/position.txt"), "r")
+        defaultStart = posFile.read()
+        posFile.close()
+    except Exception:
+        defaultStart = "A1"
 
-    if (".csv" in sys.argv[1]):
-        csvPath = sys.argv[1]
+    skipStart = [1, 1]
+    skipStart[0] = string.ascii_uppercase.find(defaultStart[0]) + 1
+    skipStart[1] = int(defaultStart[1:])
 
+
+    hasArgs = False
+    isUserLabel = False
+    isCSV = False
+
+    if (args.csv_file is not None):
+        isCSV = True
+        csvPath = args.csv_file
+    if (len(args.argNames) > 0):
+        if (".csv" in args.argNames[0]):
+            isCSV = True
+            csvPath = args.argNames[0]
+
+    if (isCSV is True):
+        hasArgs = True
         print(f"{bcolors.OKCYAN}Importing names from {csvPath}{bcolors.ENDC}")
-
         headerNum = input(f"{bcolors.HEADER}How many header rows to ignore?: {bcolors.ENDC}")
         if (headerNum == ""):
             headerNum = 0
@@ -295,131 +322,143 @@ if (len(sys.argv) > 1):
         except Exception:
             print(f"{bcolors.WARNING}WARNING: Unable to interpret, defaulting to 0{bcolors.ENDC}")
             headerNum = 0
-
         allText = ""
         try:
             allText = []
             with open(csvPath, newline='') as csvfile:
-                inputfile = csv.reader(csvfile, delimiter=' ', quotechar='|')
+                inputfile = csv.reader(csvfile, delimiter='\t', quotechar='|')
                 for idx, row in enumerate(inputfile):
                     if (idx >= headerNum):
                         allText.append(', '.join(row))
                 allText = ', '.join(allText)
         except Exception:
             print(f"{bcolors.FAIL}ERROR: Unable to read CSV file, defaulting to user input{bcolors.ENDC}")
+            print("")
             hasArgs = False
 
         if (allText == ""):
             print(f"{bcolors.FAIL}ERROR: No data from CSV, defaulting to user input{bcolors.ENDC}")
+            print("")
             hasArgs = False
         else:
             studentList = allText
 
     else:
-
-        hasArgs = False
-
-
-if (not hasArgs):
-    studentList = input(f"{bcolors.HEADER}Enter student Usernames separated by commas: {bcolors.ENDC}")
-if (studentList == ""):
-    isUserLabel = True
-studentList = studentList.lower().split(",")
-studentList = [s.strip() for s in studentList]
+        if (len(args.argNames) > 0):
+            hasArgs = True
+            studentList = ", ".join(args.argNames)
 
 
-skipStartInput = input(f"{bcolors.HEADER}Enter the first available label or press enter for A1: {bcolors.ENDC}")
+    if (not hasArgs):
+        studentList = input(f"{bcolors.HEADER}Enter student Usernames separated by commas: {bcolors.ENDC}")
+    if (studentList == ""):
+        isUserLabel = True
+    studentList = re.split('\s|,', studentList.lower())
+    studentList = list(filter(None, studentList))
 
 
-sheet = labels.Sheet(specs, draw_label, border=isBorders)
+    skipStartInput = input(f"{bcolors.HEADER}Enter the first available label or press enter for {defaultStart}: {bcolors.ENDC}")
 
 
-skipStartInputSearch = re.search("^[a-zA-Z][0-9]+$", skipStartInput)
-if (skipStartInputSearch is not None):
-
-    newString = ""
-    for i in range(skipStartInputSearch.span(0)[0], skipStartInputSearch.span(0)[0] + skipStartInputSearch.span(0)[1]):
-        newString = newString + skipStartInput[i].upper()
-
-    skipStart[0] = string.ascii_uppercase.find(newString[0]) + 1
-    skipStart[1] = int(newString[1:])
-    if (skipStart[0] > sheetSpecColumns):
-        skipStart[0] = sheetSpecColumns
-        print(f"{bcolors.WARNING}WARNING: Label column out of range, reducing to {sheetSpecColumns}{bcolors.ENDC}")
-    if (skipStart[1] > sheetSpecRows):
-        skipStart[1] = sheetSpecRows
-        print(f"{bcolors.WARNING}WARNING: Label row out of range, reducing to {sheetSpecRows}{bcolors.ENDC}")
+    sheet = labels.Sheet(specs, draw_label, border=isBorders)
 
 
-    print(f"{bcolors.OKCYAN}Beginning labels at {skipStart}{bcolors.ENDC}")
+    skipStartInputSearch = re.search("^[a-zA-Z][0-9]+$", skipStartInput)
+    if (skipStartInputSearch is not None):
 
-else:
-    print(f"{bcolors.WARNING}Defaulting label start to A1{bcolors.ENDC}")
+        newString = ""
+        for i in range(skipStartInputSearch.span(0)[0], skipStartInputSearch.span(0)[0] + skipStartInputSearch.span(0)[1]):
+            newString = newString + skipStartInput[i].upper()
 
-print("")
+        skipStart[0] = string.ascii_uppercase.find(newString[0]) + 1
+        skipStart[1] = int(newString[1:])
+        if (skipStart[0] > sheetSpecColumns):
+            skipStart[0] = sheetSpecColumns
+            print(f"{bcolors.WARNING}WARNING: Label column out of range, reducing to {sheetSpecColumns}{bcolors.ENDC}")
+        if (skipStart[1] > sheetSpecRows):
+            skipStart[1] = sheetSpecRows
+            print(f"{bcolors.WARNING}WARNING: Label row out of range, reducing to {sheetSpecRows}{bcolors.ENDC}")
 
-usedLabels = [[]]
-isFound = False
-for i in range(1, sheetSpecRows+1):
-    for j in range(1, sheetSpecColumns+1):
-        if (not isFound):
-            if (j == skipStart[0] and i == skipStart[1]):
-                isFound = True
+
+        print(f"{bcolors.OKCYAN}Beginning labels at {skipStart}{bcolors.ENDC}")
+
+    else:
+        print(f"{bcolors.WARNING}Defaulting label start to {defaultStart}{bcolors.ENDC}")
+
+    print("")
+
+    usedLabels = [[]]
+    isFound = False
+    for i in range(1, sheetSpecRows+1):
+        for j in range(1, sheetSpecColumns+1):
+            if (not isFound):
+                if (j == skipStart[0] and i == skipStart[1]):
+                    isFound = True
+                else:
+                    if (isFound is False):
+                        usedLabels.append([i, j])
+    usedLabels.pop(0)
+    sheet.partial_page(1, usedLabels)
+
+    generatedSomething = False
+    if (not isUserLabel):
+        for i in range(len(studentList)):
+            studentStore = studentUser(studentList[i], currentYear)
+            if studentStore.valid:
+                sheet.add_label(studentStore)
+                print(f">  Generated [{studentStore.userName}] - {studentStore.fullName}")
+                generatedSomething = True
             else:
-                if (isFound is False):
-                    usedLabels.append([i, j])
-usedLabels.pop(0)
-sheet.partial_page(1, usedLabels)
-
-generatedSomething = False
-generatedError = False
-listOfErrors = []
-if (not isUserLabel):
-    for i in range(len(studentList)):
-        studentStore = studentUser(studentList[i], currentYear)
-        if studentStore.valid:
-            sheet.add_label(studentStore)
-            print(f">  Generated [{studentStore.userName}] - {studentStore.fullName}")
-            generatedSomething = True
-        else:
-            print(f"{bcolors.FAIL}WARNING: Failed to generate tag [{studentStore.userName}]{bcolors.ENDC}")
-else:
-    inputComplete = False
-    while not inputComplete:
-        print(f"{bcolors.OKCYAN}<<----- New Manual Label ----->>{bcolors.ENDC}")
-        bigText = input(f"{bcolors.HEADER}Enter large label text: {bcolors.ENDC}")
-        tlText = input(f"{bcolors.HEADER}Enter upper left label text: {bcolors.ENDC}")
-        trText = input(f"{bcolors.HEADER}Enter upper right label text: {bcolors.ENDC}")
-        barText = input(f"{bcolors.HEADER}Enter barcode text: {bcolors.ENDC}")
-        if  (barText != ""):
-            tempLabel = userInput(bigText, tlText, trText, barText)
-            sheet.add_label(tempLabel)
-            print(f"Generated [{tempLabel.userName}] - {tempLabel.lastName}\n")
-            generatedSomething = True
-        else:
-            print(f"{bcolors.WARNING}WARNING: Barcode cannot be left blank{bcolors.ENDC}")
-        another = input(f"{bcolors.HEADER}Add Another Label? (Y/n): {bcolors.ENDC}")
-        if (another == "Y"):
-            print("")
-        else:
-            inputComplete = True
+                print(f"{bcolors.FAIL}WARNING: Failed to generate tag [{studentStore.userName}]{bcolors.ENDC}")
+    else:
+        inputComplete = False
+        while not inputComplete:
+            print(f"{bcolors.OKCYAN}<<----- New Manual Label ----->>{bcolors.ENDC}")
+            bigText = input(f"{bcolors.HEADER}Enter large label text: {bcolors.ENDC}")
+            tlText = input(f"{bcolors.HEADER}Enter upper left label text: {bcolors.ENDC}")
+            trText = input(f"{bcolors.HEADER}Enter upper right label text: {bcolors.ENDC}")
+            barText = input(f"{bcolors.HEADER}Enter barcode text: {bcolors.ENDC}")
+            if  (barText != ""):
+                tempLabel = userInput(bigText, tlText, trText, barText)
+                sheet.add_label(tempLabel)
+                print(f"Generated [{tempLabel.userName}] - {tempLabel.lastName}\n")
+                generatedSomething = True
+            else:
+                print(f"{bcolors.WARNING}WARNING: Barcode cannot be left blank{bcolors.ENDC}")
+            another = input(f"{bcolors.HEADER}Add Another Label? (Y/n): {bcolors.ENDC}")
+            if (another == "Y"):
+                print("")
+            else:
+                inputComplete = True
 
 
-print("")
+    print("")
 
-if(generatedSomething):
-    sheet.save(os.path.join(desktop_path, "Labels.pdf"))
-    print(f"{bcolors.OKGREEN}Document Saved as Labels.pdf on Desktop{bcolors.ENDC}")
-    print(f"{bcolors.OKCYAN}{sheet.label_count} label{'s' if sheet.label_count > 1 else ''} output on {sheet.page_count} page{'s' if sheet.page_count > 1 else ''}.{bcolors.ENDC}")
-else:
-    print(f"{bcolors.FAIL}ERROR: No Labels Generated{bcolors.ENDC}")
+    if(generatedSomething):
+        sheet.save(os.path.join(output_path, "Labels.pdf"))
+        print(f"{bcolors.OKGREEN}Document Saved as Labels.pdf on Desktop{bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}{sheet.label_count} label{'s' if sheet.label_count > 1 else ''} output on {sheet.page_count} page{'s' if sheet.page_count > 1 else ''}.{bcolors.ENDC}")
+        os.system(f"open {output_path}/Labels.pdf")
 
-try:
-    filelist = glob.glob(os.path.join(base_path, "temp", "*"))
-    for f in filelist:
-        os.remove(f)
-except Exception:
-    print(f"{bcolors.WARNING}WARNING: Unable to complete cleanup{bcolors.ENDC}")
+        posFile = open(os.path.join(base_path, "temp/position.txt"), "w")
+        finalPos = (skipStart[0]-1) + ((skipStart[1]-1)*sheetSpecColumns) + sheet.label_count
+        finalPos = finalPos % (sheetSpecColumns * sheetSpecRows)
+        posString = string.ascii_uppercase[finalPos % sheetSpecColumns] + str((finalPos // sheetSpecColumns)+1)
+        posFile.write(posString)
+        posFile.close()
 
-# time.sleep(1)
-print("")
+    else:
+        print(f"{bcolors.FAIL}ERROR: No Labels Generated{bcolors.ENDC}")
+
+    try:
+        filelist = glob.glob(os.path.join(base_path, "temp", "*.png"))
+        for f in filelist:
+            os.remove(f)
+    except Exception:
+        print(f"{bcolors.WARNING}WARNING: Unable to complete cleanup{bcolors.ENDC}")
+
+    # time.sleep(1)
+    print("")
+
+if __name__ == "__main__":
+    main()
