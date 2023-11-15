@@ -1,4 +1,5 @@
 # labelGenerator.py
+`v 1.0.0`
 
 This python script generates student, staff, and faculty labels from a list of usernames using Active Directory information.
 
@@ -23,7 +24,7 @@ git clone https://github.com/ccsnetadmin/studentLabels.git ~/.studentLabels
 python3 -m pip install -r ~/.studentLabels/requirements.txt
 ```
 
-To set the alias `label` run the code below, then restart your terminal.
+To set the alias `label`, run the code below and restart your terminal.
 
 ```console
 type label >/dev/null && echo "Alias exists" || sudo printf "\nalias label=\"python3 ~/.studentLabels/labelGenerator.py\"\n" >> ~/.zprofile
