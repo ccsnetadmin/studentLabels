@@ -278,12 +278,12 @@ print("")
 hasArgs = False
 isUserLabel = False
 
-if sys.argv is not None:
+if (len(sys.argv) > 1):
 
     hasArgs = True
 
-    if (".csv" in sys.argv[0]):
-        csvPath = sys.argv[0]
+    if (".csv" in sys.argv[1]):
+        csvPath = sys.argv[1]
 
         print(f"{bcolors.OKCYAN}Importing names from {csvPath}{bcolors.ENDC}")
 
