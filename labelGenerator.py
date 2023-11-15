@@ -306,13 +306,18 @@ if (len(sys.argv) > 1):
                         allText.append(', '.join(row))
                 allText = ', '.join(allText)
         except Exception:
-            print(f"{bcolors.FAIL}ERROR: Unable to read CSV file{bcolors.ENDC}")
+            print(f"{bcolors.FAIL}ERROR: Unable to read CSV file, defaulting to user input{bcolors.ENDC}")
+            hasArgs = False
 
         if (allText == ""):
             print(f"{bcolors.FAIL}ERROR: No data from CSV, defaulting to user input{bcolors.ENDC}")
             hasArgs = False
         else:
             studentList = allText
+
+    else:
+
+        hasArgs = False
 
 
 if (not hasArgs):
