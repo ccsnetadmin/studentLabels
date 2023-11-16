@@ -37,7 +37,7 @@ python3 -m pip install --upgrade pip && python3 -m pip install -r ~/.studentLabe
 To set the alias `label`, run the code below and restart your terminal.
 
 ```console
-type label >/dev/null && echo "Alias exists" || echo 'alias label="python3 ~/.studentLabels/labelGenerator.py\"' >> ~/.zprofile
+type label >/dev/null && echo "Alias exists" || echo 'alias label="python3 ~/.studentLabels/labelGenerator.py"' >> ~/.zprofile
 ```
 
 ## Updating
