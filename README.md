@@ -1,5 +1,5 @@
 # labelGenerator.py
-`v 1.0.0`
+`v 1.0.1`
 
 This python script generates student, staff, and faculty labels from a list of usernames using Active Directory information.
 

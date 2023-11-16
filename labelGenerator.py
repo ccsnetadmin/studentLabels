@@ -28,7 +28,7 @@ from reportlab.lib import colors
 # This is the first of the two-year range (ex 2017-2018 would be '2017')
 currentYear = 2023
 
-version = "1.0.0"
+version = "1.0.1"
 
 base_path = os.path.dirname(__file__)
 output_path = os.path.expanduser("~/Desktop")
@@ -215,9 +215,6 @@ class studentUser:
         self.gradYear = attribYearJob
         self.school = school
         self.valid = validity
-
-        #if not validity:
-        #    print(f"WARNING: Invalid Tag -| {input} |-")
 
 def draw_label(label, width, height, obj):
 
