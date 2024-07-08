@@ -26,7 +26,7 @@ from reportlab.lib import colors
 ########## Variables ##########
 
 # This is the first of the two-year range (ex 2017-2018 would be '2017')
-currentYear = 2023
+currentYear = 2024
 
 version = "1.0.1"
 
