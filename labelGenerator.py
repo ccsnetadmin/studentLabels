@@ -83,8 +83,12 @@ parser.add_argument('-n', dest='next', required=False, action='store_true',
                     help='uses default (next) start position')
 parser.add_argument('-f', dest='csv_file', required=False,
                     help='specify path to csv file of usernames for processing')
+parser.add_argument('-g', dest='gradyear', required=False,
+                    help='specify the graduation year (e.g., 2025)')
 parser.add_argument('--head', dest='head', required=False, type=int,
                     help='specify number of csv header rows to ignore')
+parser.add_argument('-S', dest='school', required=False,
+                    help='specify the school name')
 parser.add_argument('argNames', metavar='N', nargs='*',
                     help='Usernames for label creation')
 parser.add_argument('-v','--version', action='version', version=('%(prog)s '+ version + ' | School Year ' + str(currentYear)))
@@ -421,9 +425,11 @@ def main():
         if (not isUserLabel):
             for i in range(len(studentList)):
                 studentStore = studentUser(studentList[i], currentYear)
+                studentStore.gradYear = args.gradyear if args.gradyear else studentStore.gradYear
+                studentStore.school = args.school if args.school else studentStore.school
                 if studentStore.valid:
                     sheet.add_label(studentStore)
-                    print(f">  Generated [{studentStore.userName}] - {studentStore.fullName}")
+                    print(f">  Generated [{studentStore.userName}] - {studentStore.fullName} ({studentStore.gradYear}, {studentStore.school})")
                     generatedSomething = True
                 else:
                     print(f"{bcolors.FAIL}WARNING: Failed to generate tag [{studentStore.userName}]{bcolors.ENDC}")
