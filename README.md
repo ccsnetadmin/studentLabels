@@ -100,7 +100,9 @@ Document Saved as Labels.pdf on Desktop
 | `-s START` | Specify start position for labels |
 | `-n` | Use default (saved) start position for labels |
 | `-f CSV_FILE` | Specify a .csv file of usernames |
+| `-g GRADYEAR` | specify the graduation year (e.g., 2025) |
 | `--head HEAD` | Specify a number of csv header rows to ignore |
+| `-S SCHOOL` | Specify the school name (e.g., SFHS)|
 | `-v` | show version information and current school year |
 | `[N ...]` | usernames can be entered directly via arguments to bypass the interactive prompt|
 
